@@ -91,7 +91,6 @@ int main()
 	
 	cout << "Result: "<< stos.top();
 	
-	getchar();getchar();
 	
 	return 0;	
 }
