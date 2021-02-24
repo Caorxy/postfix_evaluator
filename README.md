@@ -1,5 +1,5 @@
 # postfix_evaluator
-The evaluator supports the following math operations:
+This evaluator supports the following math operations:
 - addition (+) and subtraction (-)
 - multiplication (*) and division (/)
 - square root (sqrt) and exponentiation (^)
