@@ -1,97 +1,67 @@
-// by Gabriel Pawlak
-
-#include<iostream>
-#include<cstdlib>
-#include<string>
-#include<stack>
-#include<math.h>
+#include <iostream>
+#include <stack>
+#include <string>
+#include <cmath>
+#include <sstream>
 
 using namespace std;
 
-int main()
-{
-	string input;
-	
-	cout <<"Enter the expression in a postfix notation, separating consecutive elements with commas (for floating point numbers use . )\n";
-	cin >> input;
-	
-	cout << endl;
-		
-    stack < float > stos;
-	string tempint;
-	bool itwasint = false;
-	float k;
-	
-	int length = input.length();
+float performOperation(char operation, float a, float b) {
+    switch (operation) {
+        case '+': return a + b;
+        case '-': return a - b;
+        case '*': return a * b;
+        case '/': return a / b;
+        case '^': return pow(a, b);
+        default: throw invalid_argument("Unknown operation");
+    }
+}
 
-	for(int i=0;i<length;i++)
-	{
-		if((input[i] == ',')&&(itwasint))
-		{
-		     k = stof(tempint);
-		     stos.push(k);
-		     tempint = "";
-		     itwasint = false;
-		}
-		else if(((input[i] >= 48)&&(input[i] <= 57))||(input[i] == '.')||((input[i] == '-')&&((input[i+1] >= 48)&&(input[i+1] <= 57))))//chary od 48 do 57 to cyfry
-	     {
-	     	tempint += input[i];
-	     	itwasint = true;
-	     }
-	     else if(input[i] == '~')
-	     {
-	     	stos.top() -= 2*stos.top();
-	     }
-	      else if((input[i] == 's')&&(input[i+1] == 'q'))
-	     {
-	     	i += 3;
-	     	stos.top() = sqrt(stos.top());
-	     }
-	      else if(input[i] == '+')
-	     {
-	     	k = stos.top();
-	     	stos.pop();
-	     	stos.top() += k;	
-	     }
-	       else if(input[i] == '-')
-	     {
-	     	k = stos.top();
-	     	stos.pop();
-	     	stos.top() -= k;	
-	     }
-	     else if(input[i] == '*')
-	     {
-	     	k = stos.top();
-	     	stos.pop();
-	     	stos.top() *= k;	
-	     }
-	     else if(input[i] == '/')
-	     {
-	     	k = stos.top();
-	     	stos.pop();
-	     	stos.top() /= k;	
-	     }
-	     else if(input[i] == '^')
-	     {
-	     	k = stos.top();
-	     	stos.pop();
-	     	stos.top() = pow(stos.top(),k);
-	     }
-	     else if(input[i] == 's')
-	     {
-	     	i = i+2;
-	     	stos.top() = sin(stos.top());	
-	     }
-	         else if(input[i] == 'c')
-	     {
-	     	i =i+2;
-	     	stos.top() = cos(stos.top());	
-	     }		   	     
-	}
-	
-	cout << "Result: "<< stos.top();
-	
-	getchar(); getchar();
-	
-	return 0;	
+float performUnaryOperation(const string& operation, float a) {
+    if (operation == "sqrt") return sqrt(a);
+    if (operation == "sin") return sin(a);
+    if (operation == "cos") return cos(a);
+    if (operation == "~") return -a;
+    throw invalid_argument("Unknown unary operation");
+}
+
+int main() {
+    string input;
+
+    cout << "Enter the expression in a postfix notation, separating consecutive elements with commas (for floating point numbers use . )\n";
+    cin >> input;
+
+    stack<float> stos;
+    string tempint;
+    bool itwasint = false;
+
+    stringstream ss(input);
+    string token;
+
+    while (getline(ss, token, ',')) {
+        if (token.empty()) continue;
+
+        if (isdigit(token[0]) || token[0] == '.' || (token[0] == '-' && isdigit(token[1]))) {
+            stos.push(stof(token));
+        } else if (token == "~" || token == "sqrt" || token == "sin" || token == "cos") {
+            float operand = stos.top(); stos.pop();
+            stos.push(performUnaryOperation(token, operand));
+        } else if (token.size() == 1 && (token[0] == '+' || token[0] == '-' || token[0] == '*' || token[0] == '/' || token[0] == '^')) {
+            float operand2 = stos.top(); stos.pop();
+            float operand1 = stos.top(); stos.pop();
+            stos.push(performOperation(token[0], operand1, operand2));
+        } else {
+            cerr << "Invalid token: " << token << endl;
+            return 1;
+        }
+    }
+
+    if (stos.size() != 1) {
+        cerr << "Error in the input expression." << endl;
+        return 1;
+    }
+
+    cout << "Result: " << stos.top() << endl;
+
+    return 0;
 }
